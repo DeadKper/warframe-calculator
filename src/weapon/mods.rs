@@ -30,15 +30,28 @@ impl<'a> Mods<'a> {
         }
     }
 
-    pub fn get_dmg_mult(&self, dot: bool) -> f64 {
+    pub fn get_dmg_mult(&self, dmg_type: Option<Type>, dot: bool) -> f64 {
         let mut total = 1.0;
-        for (dmg, value) in &self.damage {
-            if ! dmg.mult() { continue; }
-            if dmg == &Type::Faction && dot {
-                total *= (value + 100.0) / 100.0;
+
+        for (&dmg_type, inc) in self.damage.iter().filter(|(&dmg_type, _)| dmg_type.mult()) {
+            if dmg_type == Type::Faction && dot {
+                total *= (inc + 100.0) / 100.0;
             }
-            total *= (value + 100.0) / 100.0;
+            total *= (inc + 100.0) / 100.0;
         }
+
+        if let Some(dmg_type) = dmg_type {
+            match self.damage.get(&dmg_type) {
+                Some(increase) => {
+                    match dmg_type {
+                        Type::Slash | Type::Gas => total *= if dot { 1.0 } else { (increase + 100.0) / 100.0 },
+                        _ => total *= (increase + 100.0) / 100.0,
+                    }
+                },
+                _ => {},
+            }
+        }
+
         total
     }
 }
