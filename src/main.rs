@@ -21,9 +21,13 @@ fn main() {
 
     println!("{}", mod_set.get_dmg_mult(false));
 
-    mod_set.add_damage(Type::Faction, 50.0);
+    whipclaw.mods = Some(&mod_set);
 
-    println!("{}", mod_set.get_dmg_mult(false));
+    println!("{}", whipclaw.mods.unwrap().get_dmg_mult(false));
 
     println!("{}", whipclaw.get_base_damage(None));
+
+    println!("{}", whipclaw.get_damage(None));
+
+    println!("{}", whipclaw.get_damage(Some(Type::Slash)));
 }

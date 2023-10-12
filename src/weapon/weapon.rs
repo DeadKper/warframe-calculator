@@ -10,7 +10,7 @@ pub struct Weapon<'a> {
     pub crit_chance: f64,
     pub crit_damage: f64,
     pub status_chance: f64,
-    pub mods: Option<Mods<'a>>,
+    pub mods: Option<&'a Mods<'a>>,
 }
 
 impl<'a> Weapon<'a> {
@@ -51,48 +51,15 @@ impl<'a> Weapon<'a> {
         let mods = &self.mods;
         if let Some(mods) = mods {
             if let Some(damage_type) = damage_type {
-                for (key, value) in &mods.damage {
-                    if damage_type != *key || ! self.damage.contains_key(&damage_type) {
-                        continue;
-                    }
-
-                    return if damage_type.ips() {
-                        self.damage[key]
-                    } else {
-                        self.get_base_damage(None)
-                    } * (value + 100.0) / 100.0;
+                if ! self.damage.contains_key(&damage_type) {
+                    return 0.0;
                 }
+
+                return self.damage[&damage_type] * mods.get_dmg_mult(damage_type.dot());
             } else {
-                let base = self.get_base_damage(None);
-                let mut total = 0.0;
-                for (key, value) in &mods.damage {
-                    if ! self.damage.contains_key(key) {
-                        continue
-                    }
-
-                    total += if key.ips() {
-                        self.damage[key]
-                    } else {
-                        base
-                    } * (value + 100.0) / 100.0;
-                }
-                return total;
+                return self.get_base_damage(None) * mods.get_dmg_mult(false);
             }
         }
         self.get_base_damage(None)
-    }
-
-    pub fn get_bleed(&self, mods: Option<Mods>) -> f64 {
-        let slash = self.damage.get(&Type::Slash);
-        match slash {
-            Some(slash) => {
-                if let Some(mods) = mods {
-                    return *slash * mods.get_dmg_mult(true);
-                } else {
-                    return *slash;
-                }
-            },
-            None => 0.0,
-        }
     }
 }
