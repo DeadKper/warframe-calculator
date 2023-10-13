@@ -130,23 +130,32 @@ impl<'a> Weapon<'a> {
         self.get_attr(Attribute::CritChance) / 100.0 * self.get_attr(Attribute::CritDamage)
     }
 
-    pub fn print_stats(&self) {
+    pub fn print_display(&self) {
         println!("Weapon: {}", self.name);
         match self.mods {
             Some(mods) => println!("Mods: {}", mods.combination_name),
             _ => {},
         }
         println!();
+    }
 
-        println!("Crit Chance: {:.2}", self.get_attr(Attribute::CritChance));
-        println!("Crit Damage: {:.2}", self.get_attr(Attribute::CritDamage));
-        println!("Status Chance: {:.2}", self.get_attr(Attribute::StatusChance));
+    pub fn print_base_stats(&self) {
+        println!("Base Crit Chance: {:.2}", self.crit_chance);
+        println!("Base Crit Damage: {:.2}", self.crit_damage);
+        println!("Base Status Chance: {:.2}", self.status_chance);
         println!();
 
         for (dmg_type, value) in &self.damage {
             println!("Base {}: {:.2}", dmg_type, value);
         }
         println!("Base Total: {:.2}", self.get_base_damage(None));
+        println!();
+    }
+
+    pub fn print_stats(&self) {
+        println!("Crit Chance: {:.2}", self.get_attr(Attribute::CritChance));
+        println!("Crit Damage: {:.2}", self.get_attr(Attribute::CritDamage));
+        println!("Status Chance: {:.2}", self.get_attr(Attribute::StatusChance));
         println!();
 
         for &dmg_type in self.valid_dmg_list().iter() {
