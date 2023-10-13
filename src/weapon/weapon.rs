@@ -119,7 +119,7 @@ impl<'a> Weapon<'a> {
     }
 
     pub fn get_status_weight(&self, dmg_type: Type) -> f64 {
-        self.get_damage(Some(dmg_type), false) / self.get_damage(None, false)
+        self.get_damage(Some(dmg_type), false) / self.get_damage(None, false) * 100.0
     }
 
     pub fn get_status_chance(&self, dmg_type: Type) -> f64 {
@@ -156,12 +156,12 @@ impl<'a> Weapon<'a> {
         println!();
 
         let mut total_dot = 0.0;
-        for dmg_type in Type::iter().filter(|dmg_type| dmg_type.dot()) {
-            let dot = self.get_damage(Some(dmg_type), true) * self.get_crit_mult();
-            if dot > 0.0 {
-                total_dot += dot;
-                println!("DoT {}: {:.2}", dmg_type, dot);
-            }
+        for dmg_type in Type::iter().filter(|&dmg_type| dmg_type.dot() && self.has_dmg(dmg_type)) {
+            let dot = self.get_damage(Some(dmg_type), true) * self.get_crit_mult() * self.get_status_chance(dmg_type) / 100.0;
+            total_dot += dot;
+            println!("DoT {} Weight: {:.2}%", dmg_type, self.get_status_weight(dmg_type));
+            println!("DoT {} Chance: {:.2}%", dmg_type, self.get_status_chance(dmg_type));
+            println!("DoT {} Damage: {:.2}", dmg_type, dot);
         }
         println!("DoT Total: {:.2}", total_dot);
     }
