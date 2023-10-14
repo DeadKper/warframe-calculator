@@ -2,8 +2,8 @@ use std::collections::HashMap;
 
 use strum::IntoEnumIterator;
 
+use crate::damage::{Attribute, Type};
 use crate::weapon::Mods;
-use crate::damage::{Type, Attribute};
 
 #[derive(Clone, Default)]
 pub struct Weapon<'a> {
@@ -50,11 +50,9 @@ impl<'a> Weapon<'a> {
     }
 
     fn has_dmg(&self, dmg_type: Type) -> bool {
-        !dmg_type.mult() && (
-            self.damage.contains_key(&dmg_type)
-            || self.mods.is_some()
-            && self.mods.unwrap().damage.contains_key(&dmg_type)
-        )
+        !dmg_type.mult()
+            && (self.damage.contains_key(&dmg_type)
+                || self.mods.is_some() && self.mods.unwrap().damage.contains_key(&dmg_type))
     }
 
     pub fn valid_dmg_list(&self) -> Vec<Type> {
@@ -81,19 +79,16 @@ impl<'a> Weapon<'a> {
                 } else {
                     let mut damage = 0.0;
                     Type::iter()
-                        .filter(|dmg_type|
+                        .filter(|dmg_type| {
                             !dmg_type.mult()
-                            && (
-                                self.damage.contains_key(dmg_type)
-                                || mods.damage.contains_key(dmg_type)
-                            ))
-                        .for_each(|dmg_type|
-                            damage += self.get_damage(Some(dmg_type), false)
-                        );
+                                && (self.damage.contains_key(dmg_type)
+                                    || mods.damage.contains_key(dmg_type))
+                        })
+                        .for_each(|dmg_type| damage += self.get_damage(Some(dmg_type), false));
                     damage
                 }
-            },
-            _ => self.get_base_damage(None)
+            }
+            _ => self.get_base_damage(None),
         }
     }
 
@@ -106,12 +101,10 @@ impl<'a> Weapon<'a> {
 
         let mult = match self.mods {
             None => 1.0,
-            Some(mods) => {
-                match attr {
-                    Attribute::CritChance => (mods.crit_chance + 100.0) / 100.0,
-                    Attribute::CritDamage => (mods.crit_damage + 100.0) / 100.0,
-                    Attribute::StatusChance => (mods.status_chance + 100.0) / 100.0,
-                }
+            Some(mods) => match attr {
+                Attribute::CritChance => (mods.crit_chance + 100.0) / 100.0,
+                Attribute::CritDamage => (mods.crit_damage + 100.0) / 100.0,
+                Attribute::StatusChance => (mods.status_chance + 100.0) / 100.0,
             },
         };
 
@@ -126,7 +119,7 @@ impl<'a> Weapon<'a> {
         self.get_attr(Attribute::StatusChance) / 100.0 * self.get_status_weight(dmg_type)
     }
 
-    pub fn get_crit_mult(&self) -> f64{
+    pub fn get_crit_mult(&self) -> f64 {
         self.get_attr(Attribute::CritChance) / 100.0 * self.get_attr(Attribute::CritDamage)
     }
 
@@ -134,7 +127,7 @@ impl<'a> Weapon<'a> {
         println!("Weapon: {}", self.name);
         match self.mods {
             Some(mods) => println!("Mods: {}", mods.combination_name),
-            _ => {},
+            _ => {}
         }
         println!();
     }
@@ -155,23 +148,46 @@ impl<'a> Weapon<'a> {
     pub fn print_stats(&self) {
         println!("Crit Chance: {:.2}", self.get_attr(Attribute::CritChance));
         println!("Crit Damage: {:.2}", self.get_attr(Attribute::CritDamage));
-        println!("Status Chance: {:.2}", self.get_attr(Attribute::StatusChance));
+        println!(
+            "Status Chance: {:.2}",
+            self.get_attr(Attribute::StatusChance)
+        );
         println!();
 
         for &dmg_type in self.valid_dmg_list().iter() {
-            println!("Hit {}: {:.2}", dmg_type, self.get_damage(Some(dmg_type), false) * self.get_crit_mult());
+            println!(
+                "Hit {}: {:.2}",
+                dmg_type,
+                self.get_damage(Some(dmg_type), false) * self.get_crit_mult()
+            );
         }
-        println!("Hit Total: {:.2}", self.get_damage(None, false) * self.get_crit_mult());
+        println!(
+            "Hit Total: {:.2}",
+            self.get_damage(None, false) * self.get_crit_mult()
+        );
         println!();
 
         let mut total_dot = 0.0;
         for dmg_type in Type::iter().filter(|&dmg_type| dmg_type.dot() && self.has_dmg(dmg_type)) {
-            let dot = self.get_damage(Some(dmg_type), true) * self.get_crit_mult() * self.get_status_chance(dmg_type) / 100.0;
+            let dot = self.get_damage(Some(dmg_type), true)
+                * self.get_crit_mult()
+                * self.get_status_chance(dmg_type)
+                / 100.0;
             total_dot += dot;
-            println!("DoT {} Weight: {:.2}%", dmg_type, self.get_status_weight(dmg_type));
-            println!("DoT {} Chance: {:.2}%", dmg_type, self.get_status_chance(dmg_type));
+            println!(
+                "DoT {} Weight: {:.2}%",
+                dmg_type,
+                self.get_status_weight(dmg_type)
+            );
+            println!(
+                "DoT {} Chance: {:.2}%",
+                dmg_type,
+                self.get_status_chance(dmg_type)
+            );
             println!("DoT {} Damage: {:.2}", dmg_type, dot);
         }
-        println!("DoT Total: {:.2}", total_dot);
+        if total_dot > 0.0 {
+            println!("DoT Total: {:.2}", total_dot);
+        }
     }
 }

@@ -1,5 +1,5 @@
-mod damage;
 mod attributes;
+mod damage;
 
-pub use damage::Type;
 pub use attributes::Attribute;
+pub use damage::Type;

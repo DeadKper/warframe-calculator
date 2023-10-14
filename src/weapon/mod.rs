@@ -1,5 +1,5 @@
 mod mods;
 mod weapon;
 
-pub use weapon::Weapon;
 pub use mods::Mods;
+pub use weapon::Weapon;

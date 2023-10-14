@@ -12,7 +12,12 @@ pub struct Mods<'a> {
 }
 
 impl<'a> Mods<'a> {
-    pub fn new(combination_name: &'a str, crit_chance: f64, crit_damage: f64, status_chance: f64) -> Self {
+    pub fn new(
+        combination_name: &'a str,
+        crit_chance: f64,
+        crit_damage: f64,
+        status_chance: f64,
+    ) -> Self {
         Self {
             combination_name,
             damage: HashMap::new(),
@@ -24,7 +29,8 @@ impl<'a> Mods<'a> {
 
     pub fn add_damage(&mut self, dmg_type: Type, ammount: f64) {
         if self.damage.contains_key(&dmg_type) {
-            self.damage.insert(dmg_type, self.damage[&dmg_type] + ammount as f64);
+            self.damage
+                .insert(dmg_type, self.damage[&dmg_type] + ammount as f64);
         } else {
             self.damage.insert(dmg_type, ammount as f64);
         }
@@ -42,13 +48,13 @@ impl<'a> Mods<'a> {
 
         if let Some(dmg_type) = dmg_type {
             match self.damage.get(&dmg_type) {
-                Some(increase) => {
-                    match dmg_type {
-                        Type::Slash | Type::Gas => total *= if dot { 1.0 } else { (increase + 100.0) / 100.0 },
-                        _ => total *= (increase + 100.0) / 100.0,
+                Some(increase) => match dmg_type {
+                    Type::Slash | Type::Gas => {
+                        total *= if dot { 1.0 } else { (increase + 100.0) / 100.0 }
                     }
+                    _ => total *= (increase + 100.0) / 100.0,
                 },
-                _ => {},
+                _ => {}
             }
         }
 

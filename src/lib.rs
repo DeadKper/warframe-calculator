@@ -1,2 +1,2 @@
-pub mod weapon;
 pub mod damage;
+pub mod weapon;
