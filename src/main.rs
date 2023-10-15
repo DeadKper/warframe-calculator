@@ -18,11 +18,7 @@ fn main() {
         40.0 * 11.0 + 60.0,
     );
 
-    mod_set.add_damage(Type::Base, 165.0);
-    mod_set.add_damage(Type::Base, 180.0);
-    mod_set.add_damage(Type::Base, 350.0);
-    mod_set.add_damage(Type::Base, -60.0);
-
+    mod_set.add_damage(Type::Base, 165.0 + 180.0 + 350.0 - 60.0);
     mod_set.add_damage(Type::Slash, 90.0 + 120.0);
 
     whipclaw.mods = Some(&mod_set);
